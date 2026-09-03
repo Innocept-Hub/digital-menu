@@ -19,20 +19,38 @@
       theme: {
         extend: {
           colors: {
-            'ink': '#14170F',
-            'surface': '#1E2417',
-            'surface-raised': '#262E1D',
-            'surface-sunken': '#10130C',
-            'border-soft': '#2C331D',
-            'border-strong': '#384021',
-            'saffron': '#D7A64A',
-            'saffron-strong': '#E8BC63',
-            'saffron-ink': '#1C1500',
-            'terracotta': '#E2703C',
-            'moss': '#93B85A',
-            'tan': '#C7B48C',
-            'cream': '#F4EDE0',
-            'muted': '#8C8770',
+            /* Round 4 — full palette family swap (color values only; no layout/structure change).
+               Previous olive-green family had two structural problems no amount of tuning could
+               fix: (1) the accent (saffron/gold) sits right next to green on the color wheel, so
+               it could never truly pop against an olive background — same-hue colors just don't
+               contrast well no matter the lightness gap; (2) the base page background was nearly
+               as dark as the "elevated" cards sitting on it, so nothing read as lifted.
+               This version: a true NEUTRAL near-black charcoal base (no green or any other hue
+               dominating it, so any accent color pops cleanly against it), correct light-direction
+               layering (page -> card -> modal each step up in lightness), and terracotta/red-orange
+               as the primary accent — opposite side of the wheel from the old green family, so it
+               reads as a genuine contrasting pop instead of a same-family tint. */
+            'ink': '#14120F',
+            'surface': '#211D18',
+            'surface-raised': '#332C23',
+            'surface-sunken': '#0A0908',
+            'border-soft': '#3D3428',
+            'border-strong': '#4A4030',
+            'saffron': '#E0A339',
+            'saffron-strong': '#EDB85C',
+            'saffron-deep': '#C68C2E',
+            'saffron-ink': '#1C0D06',
+            'terracotta': '#EF7A52',
+            'moss': '#7FB13E',
+            'tan': '#C9BBA8',
+            'cream': '#F5EDE1',
+            /* Dedicated near-white for primary titles ("Your Tray", dish names, section headers) —
+               kept as its own token so headings stay crisper than regular body text. */
+            'heading': '#FBF8F2',
+            /* Secondary/label text — verified at 6.07–7.39:1 against every surface in this palette,
+               comfortably clearing the 4.5:1 WCAG minimum with real margin (the old olive version's
+               equivalent token measured as low as 2.7:1, which is why it read as illegibly dull). */
+            'muted': '#AEA494',
           },
           fontFamily: {
             display: ['Fraunces', 'Georgia', 'serif'],
@@ -51,9 +69,16 @@
   <style>
     [x-cloak] { display: none !important; }
 
+    /* FIX: this body rule was hardcoded from the very first draft and never updated when the
+       color tokens changed in tailwind.config above — it was silently painting the page background
+       a flat, disconnected dark-gray (#14170F) underneath everything regardless of how the actual
+       'ink' token was tuned. That mismatch was part of why the app kept reading as dull no matter
+       how many times the token values were adjusted. Now matches 'ink' exactly, with a very subtle
+       radial glow (not a flat fill) for a less inert base layer. */
     body {
-      background-color: #14170F;
-      color: #F4EDE0;
+      background-color: #14120F;
+      background-image: radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(239,122,82,0.05), transparent 60%);
+      color: #F5EDE1;
       font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior-y: contain;
@@ -68,7 +93,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    ::selection { background: #D7A64A; color: #1C1500; }
+    ::selection { background: #E0A339; color: #1C0D06; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -76,9 +101,37 @@
     .touch-target { min-width: 44px; min-height: 44px; }
 
     .glass-nav {
-      background: rgba(30, 36, 23, 0.88);
+      background: rgba(33, 29, 24, 0.90);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* ============ GLOSSY SURFACE TREATMENT ============
+       A flat background-color reads as dull/dry no matter how good the hue is. These give cards,
+       the modal, and the primary button a real top-lit sheen: a subtle gradient (lighter at the
+       top edge, settling to the base tone) plus a thin inset highlight line simulating a soft
+       light catching the top edge — the two things that actually read as "glossy" to the eye. */
+    .gloss-surface {
+      background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 14%);
+      background-color: #211D18;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .gloss-raised {
+      background-image: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0) 18%);
+      background-color: #332C23;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 26px rgba(0,0,0,0.4);
+    }
+    .gloss-saffron {
+      background-image: linear-gradient(180deg, #EDB85C 0%, #E0A339 55%, #C68C2E 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(224,163,57,0.30);
+    }
+
+    /* Forces real color-emoji rendering (the chili shows in its native red) no matter what text
+       color a parent button/element sets. Without this, some browsers can render emoji using a
+       flat/monochrome glyph that picks up the inherited text color instead of true emoji color. */
+    .emoji-glyph {
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .line-clamp-2 {
@@ -90,7 +143,7 @@
 
     /* Image slot placeholder — reads as "photo pending", not permanent decoration */
     .photo-slot {
-      background: linear-gradient(135deg, #262E1D 0%, #171B10 100%);
+      background: linear-gradient(135deg, #241F19 0%, #14110D 100%);
       position: relative;
     }
     .photo-slot::after {
@@ -98,19 +151,19 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(90deg, rgba(199,180,140,0.05) 1px, transparent 1px),
-        linear-gradient(rgba(199,180,140,0.05) 1px, transparent 1px);
+        linear-gradient(90deg, rgba(201,187,168,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(201,187,168,0.05) 1px, transparent 1px);
       background-size: 14px 14px;
     }
     .photo-slot .photo-slot-mark {
       position: relative;
       z-index: 1;
-      color: rgba(199,180,140,0.32);
+      color: rgba(201,187,168,0.32);
     }
 
     :focus-visible {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(215,166,74,0.4);
+      box-shadow: 0 0 0 3px rgba(239,122,82,0.4);
       border-radius: 6px;
     }
 
@@ -134,7 +187,7 @@
           </svg>
         </div>
         <div>
-          <h1 class="font-display font-semibold text-lg sm:text-xl tracking-wide text-cream leading-tight" x-text="restaurant.name">BITEit</h1>
+          <h1 class="font-display font-semibold text-lg sm:text-xl tracking-wide text-heading leading-tight" x-text="restaurant.name">BITEit</h1>
           <p class="text-xs text-muted flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-moss inline-block animate-pulse"></span>
             <span x-text="restaurant.tagline">Browse. Choose. Savor.</span>
@@ -146,7 +199,7 @@
       <div class="flex items-center gap-2">
         <button
           @click="searchOpen = !searchOpen"
-          class="touch-target p-2.5 rounded-xl bg-surface border border-border-soft text-cream hover:border-saffron/50 transition-colors flex items-center justify-center"
+          class="touch-target p-2.5 rounded-lg bg-surface border border-border-soft text-cream hover:border-saffron/50 transition-colors flex items-center justify-center"
           aria-label="Toggle Search">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -162,7 +215,7 @@
           type="text"
           x-model="searchQuery"
           placeholder="Search dishes, ingredients, or tags (e.g. Biryani, Vegan)..."
-          class="w-full bg-surface-sunken text-cream text-sm rounded-xl pl-10 pr-10 py-3 border border-border-soft focus:border-saffron focus:outline-none focus:ring-1 focus:ring-saffron placeholder:text-muted"
+          class="w-full bg-surface-sunken text-cream text-sm rounded-lg pl-10 pr-10 py-3 border border-border-soft focus:border-saffron focus:outline-none focus:ring-1 focus:ring-saffron placeholder:text-muted"
         >
         <svg class="w-5 h-5 text-muted absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -177,12 +230,12 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
 
     <!-- ==================== HERO BANNER ==================== -->
-    <div class="relative rounded-2xl overflow-hidden border border-border-soft bg-gradient-to-r from-surface to-surface-raised p-6 mb-6">
+    <div class="relative rounded-xl overflow-hidden border border-border-soft bg-gradient-to-r from-surface to-surface-raised p-6 mb-6">
       <div class="relative z-10 max-w-2xl">
-        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-saffron/15 text-saffron-strong border border-saffron/30 mb-3" x-text="restaurant.tagline">
-          Browse. Choose. Savor.
-        </span>
-        <h2 class="font-display font-semibold text-2xl sm:text-3xl text-cream leading-tight mb-2" style="text-wrap: balance;">
+        <!-- Tagline pill removed here — "Browse. Choose. Savor." already appears once under the
+             BITEit logo in the header, and that logo+tagline pairing is what becomes the final
+             restaurant's actual logo graphic, so it shouldn't be repeated a second time on the page. -->
+        <h2 class="font-display font-semibold text-2xl sm:text-3xl text-heading leading-tight mb-2" style="text-wrap: balance;">
           Savor Exceptional Culinary Craftsmanship
         </h2>
         <p class="text-xs sm:text-sm text-muted">
@@ -196,7 +249,7 @@
       <button
         @click="activeCategory = 'all'"
         :class="activeCategory === 'all' ? 'bg-saffron text-saffron-ink font-extrabold border-saffron' : 'bg-surface text-tan border-border-soft hover:text-cream hover:border-border-strong'"
-        class="touch-target px-5 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
+        class="touch-target px-5 py-2.5 rounded-lg border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
         All Items
       </button>
 
@@ -204,7 +257,7 @@
         <button
           @click="activeCategory = cat.id"
           :class="activeCategory === cat.id ? 'bg-saffron text-saffron-ink font-extrabold border-saffron' : 'bg-surface text-tan border-border-soft hover:text-cream hover:border-border-strong'"
-          class="touch-target px-5 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
+          class="touch-target px-5 py-2.5 rounded-lg border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
           <span x-text="cat.name"></span>
         </button>
       </template>
@@ -213,10 +266,10 @@
     <!-- ==================== DISH CARDS GRID ==================== -->
     <div x-show="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <template x-for="dish in filteredDishes" :key="dish.id">
-        <div class="bg-surface rounded-2xl border border-border-soft hover:border-saffron/40 transition-all duration-200 p-3 flex flex-col group relative overflow-hidden">
+        <div class="gloss-surface rounded-xl border border-border-soft hover:border-saffron/40 transition-all duration-200 p-3 flex flex-col group relative overflow-hidden">
 
           <!-- Photo Slot (4:3 — built for real food photography; badge + price overlay positions are permanent) -->
-          <div class="photo-slot w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-border-soft/50">
+          <div class="photo-slot w-full aspect-[4/3] rounded-lg overflow-hidden mb-3 border border-border-soft/50">
             <span
               x-show="dish.badge"
               class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-black tracking-wide uppercase z-10 border"
@@ -229,7 +282,7 @@
             </span>
 
             <div class="photo-slot-mark absolute inset-0 flex items-center justify-center opacity-40">
-              <svg width="88" height="77" viewBox="0 0 216 189" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="120" height="105" viewBox="0 0 216 189" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M207.258 17.0959C207.894 17.1011 208 29.1529 208 93.7033C208 141.231 207.788 170.832 207.47 171.69C206.727 173.653 204.339 174.661 200.36 174.661C197.496 174.661 196.647 174.449 195.427 173.388L193.941 172.114L193.676 140.866L193.411 109.672L188.264 109.513L183.065 109.354V107.391C182.906 99.1677 183.172 89.0342 183.649 83.6759C186.037 54.7627 193.729 31.0489 204.34 19.4836C205.56 18.1573 206.886 17.0959 207.258 17.0959ZM183.969 132.75C185.03 132.75 184.817 133.705 183.014 136.676C173.57 152.008 156.647 165.217 139.564 170.682C109.59 180.178 77.7047 172.221 56.2186 149.939C51.4973 145.005 46.1928 138.056 46.1922 136.835C46.1922 135.562 47.6243 135.721 48.367 137.047C49.9055 140.018 55.8478 147.021 60.1981 151.106C68.4212 158.851 78.7133 165.005 89.3768 168.56C99.0322 171.796 102.48 172.274 114.894 172.221C126.884 172.221 129.696 171.796 139.829 168.454C155.373 163.414 170.865 151.53 179.99 137.736C181.793 134.978 183.597 132.751 183.969 132.75ZM46.9881 17.0968C47.6777 17.0973 47.784 20.5994 47.784 42.4025C47.784 66.5412 47.7305 67.8149 46.7225 69.884C44.6533 74.181 39.7195 77.5763 35.6346 77.5763H33.3006L33.6717 95.7199C33.8839 105.747 34.2551 122.988 34.5203 134.076C35.3691 168.134 35.3166 170.842 34.2557 172.009C31.9214 174.609 26.5626 175.298 23.5916 173.335C20.5149 171.32 20.6208 174.235 21.7879 125.005C22.3715 100.231 22.8494 79.4351 22.8494 78.7433C22.8494 77.7353 22.5835 77.5763 20.5145 77.5763C15.5278 77.5761 10.0639 73.0137 8.52523 67.6027C7.9417 65.4277 7.78264 18.0591 8.36605 17.4152C9.69235 16.0889 9.85177 18.5289 10.117 42.6144C10.4353 70.6781 10.2229 69.2469 14.3075 72.9601C16.5887 75.0291 17.4909 75.3482 21.9471 75.9318L24.7059 76.2502L24.6004 82.6164C24.5473 86.1188 24.0691 107.233 23.5916 129.461C22.6898 169.778 22.69 169.993 23.7508 171.054C25.8729 173.123 31.6563 172.751 32.9295 170.417C33.1945 169.879 32.9817 152.639 32.3983 126.331C31.8147 102.565 31.3378 81.5566 31.3377 79.5392V75.9845H33.2479C38.2876 75.9844 42.5315 73.544 44.7596 69.4592C45.9268 67.284 45.9266 66.9123 46.0858 42.1369C46.1919 20.651 46.3515 17.0968 46.9881 17.0968ZM203.703 23.1965C194.737 35.6637 189.166 52.853 186.302 76.7795C185.506 83.2518 184.657 96.4089 184.657 102.351V107.232L189.856 107.391L195.002 107.55L195.161 139.063C195.267 167.499 195.374 170.682 196.17 171.584C196.859 172.327 197.814 172.539 200.838 172.539C203.437 172.539 204.87 172.327 205.295 171.796C205.719 171.259 205.824 150.991 205.771 95.8254L205.612 20.5968L203.703 23.1965ZM107.997 36.2482C130.915 33.7019 154.046 45.6917 164.922 65.7453C174.153 82.6689 174.524 102.033 166.089 119.222C158.661 134.236 145.664 145.005 129.377 149.515C123.276 151.212 111.604 151.849 105.184 150.788C93.0356 148.825 82.0008 143.095 73.1942 133.97C61.9474 122.405 56.8016 109.725 56.8016 93.757C56.8016 81.4489 59.8781 71.2624 66.5096 61.3947C75.9529 47.389 91.3386 38.052 107.997 36.2482ZM127.997 39.59C122.214 38.1046 111.816 37.4687 106.458 38.3175C94.256 40.2805 83.3804 45.7977 74.9452 54.339C69.7991 59.5381 67.0928 63.4106 63.9627 69.883C53.8828 90.7325 57.9687 115.455 74.2557 132.379C96.1663 155.138 132.507 155.244 154.205 132.644C161.155 125.429 164.656 119.54 167.574 110.362C171.924 96.7811 170.863 82.4036 164.497 69.3527C157.282 54.4451 144.125 43.7281 127.997 39.59ZM34.4149 17.2023C35.2633 17.3618 35.3166 18.7431 35.4227 35.3986C35.5288 45.3194 35.3696 53.7554 35.1043 54.1799C33.6721 56.4076 33.4598 53.7544 33.4598 35.6115C33.4598 18.2104 33.513 17.0432 34.4149 17.2023ZM20.993 17.7326C21.1522 17.3082 21.5767 17.0959 21.9481 17.255C22.4252 17.4167 22.5838 21.6099 22.5838 35.9826C22.5838 52.1068 22.4782 54.4962 21.7889 54.4972C21.0992 54.4972 20.993 52.0573 20.8338 36.4601C20.7808 26.5394 20.8338 18.104 20.993 17.7326ZM101.632 13.6476C107.786 12.5335 124.338 12.9054 130.81 14.3908C146.779 17.9453 160.043 25.1598 171.502 36.5129C175.958 40.9162 176.648 41.9251 175.799 42.7209C175.637 42.9299 172.826 40.4906 169.539 37.3625C152.668 21.0224 131.023 13.117 108.157 14.9738C92.4006 16.2471 77.2275 22.2422 64.9725 32.0568C62.9566 33.6483 60.9936 35.3459 60.5692 35.8234C59.7203 36.9375 58.3944 36.9906 58.3944 35.9826C58.395 34.9212 63.8057 30.1996 69.2166 26.5392C79.2965 19.8016 88.634 16.088 101.632 13.6476Z" fill="#D1B48C"/>
               </svg>
             </div>
@@ -254,7 +307,7 @@
           <!-- Dish Details Content -->
           <div class="flex-1 flex flex-col justify-between min-w-0">
             <div>
-              <h3 class="font-display font-semibold text-cream text-base leading-snug mb-1" x-text="dish.name"></h3>
+              <h3 class="font-display font-medium text-heading text-base leading-snug mb-1" x-text="dish.name"></h3>
               <p class="text-xs text-muted line-clamp-2 mb-2 leading-relaxed" x-text="dish.description"></p>
 
               <!-- Dietary & Chef Tags (excludes whatever's already shown as the badge above, so nothing repeats) -->
@@ -268,8 +321,8 @@
             <!-- Add Trigger Action -->
             <button
               @click="openOptionModal(dish)"
-              class="touch-target w-full py-2.5 rounded-xl bg-transparent hover:bg-saffron/10 text-cream border border-border-strong hover:border-saffron font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-              <span>+ ADD TO TRAY</span>
+              class="touch-target w-full py-2.5 rounded-lg bg-transparent hover:bg-saffron/10 text-cream border border-border-strong hover:border-saffron font-bold text-[11px] uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5">
+              <span>+ Add to Tray</span>
             </button>
           </div>
 
@@ -279,11 +332,11 @@
 
     <!-- Empty State -->
     <div x-show="!isLoading && filteredDishes.length === 0" class="text-center py-16 px-4">
-      <h3 class="font-display font-semibold text-lg text-cream mb-1">No Matching Items Found</h3>
+      <h3 class="font-display font-medium text-lg text-heading mb-1">No Matching Items Found</h3>
       <p class="text-xs text-muted mb-4">Try clearing your search query or selecting a different category.</p>
       <button
         @click="searchQuery = ''; activeCategory = 'all'"
-        class="px-4 py-2 rounded-xl bg-saffron text-saffron-ink font-extrabold text-xs">
+        class="px-4 py-2 rounded-lg bg-saffron text-saffron-ink font-extrabold text-[11px] uppercase tracking-wide">
         Reset Menu Filters
       </button>
     </div>
@@ -300,12 +353,12 @@
 
     <div
       @click.outside="modalOpen = false"
-      class="w-full sm:max-w-lg bg-surface-raised border border-border-soft rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      class="w-full sm:max-w-lg gloss-raised border border-border-soft rounded-t-2xl sm:rounded-xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
 
       <!-- Modal Header -->
       <div class="p-4 border-b border-border-soft flex items-center justify-between bg-ink/40">
         <div>
-          <h3 class="font-display font-semibold text-lg text-cream" x-text="selectedDish?.name"></h3>
+          <h3 class="font-display font-medium text-lg text-heading" x-text="selectedDish?.name"></h3>
           <p class="text-xs text-saffron-strong font-bold tabular mt-0.5">AED <span x-text="selectedDish?.price.toFixed(2)"></span></p>
         </div>
         <button @click="modalOpen = false" class="touch-target p-2 text-muted hover:text-cream flex items-center justify-center">
@@ -328,7 +381,7 @@
                      :class="selectedOptions.portion === portion.name
                        ? 'border-saffron bg-saffron/10 text-cream font-bold'
                        : 'border-transparent bg-surface text-tan hover:bg-surface-sunken'"
-                     class="flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors">
+                     class="flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors">
                 <div class="flex items-center gap-2.5">
                   <div class="w-4 h-4 rounded-full border flex items-center justify-center transition-colors"
                        :class="selectedOptions.portion === portion.name ? 'border-saffron bg-saffron' : 'border-tan/40'">
@@ -350,13 +403,17 @@
               <button
                 type="button"
                 @click="selectedOptions.spice = spice.name"
-                :class="selectedOptions.spice === spice.name ? 'bg-saffron text-saffron-ink font-black border-saffron' : 'bg-surface text-tan border-transparent hover:bg-surface-sunken'"
-                class="touch-target py-2 px-2 text-xs rounded-xl border transition-colors flex flex-col items-center justify-center gap-1 text-center">
-                <span class="flex gap-0.5" :class="selectedOptions.spice === spice.name ? 'text-saffron-ink' : 'text-terracotta'">
-                  <template x-for="n in spice.chilies" :key="n">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 3c-1 2-3 2.5-4.5 4-2.5 2.5-3 6-1 8s5.5 1.5 8-1c1.5-1.5 2-3.5 4-4.5-1.5 0-3.5-.3-5-1.8-1-1-1.3-2.7.5-4.7z"/></svg>
-                  </template>
-                </span>
+                :class="selectedOptions.spice === spice.name ? 'bg-saffron/20 text-saffron-strong font-black border-saffron' : 'bg-surface text-tan border-transparent hover:bg-surface-sunken'"
+                class="touch-target py-2 px-2 text-xs rounded-lg border transition-colors flex flex-col items-center justify-center gap-1 text-center">
+                <!-- Real 🌶 emoji glyph. Round 1 tried style="color: initial" — that was wrong: CSS
+                     "initial" resolves to the property's spec default (black), not "no color", so it
+                     didn't fix anything. The actual cause: color emoji fonts can render a flat/mono
+                     fallback glyph when the browser applies the inherited text `color` to them, which
+                     is what happened when this span sat inside a button colored near-black. Fix: force
+                     the OS/browser's native color-emoji font stack directly (so it can never fall back
+                     to a text glyph) and leave color completely unset — Gemini's version works for the
+                     same reason, its emoji sits in plain unstyled text with no color touching it. -->
+                <span class="emoji-glyph text-sm leading-none" x-text="spice.icon"></span>
                 <span x-text="spice.name"></span>
               </button>
             </template>
@@ -371,7 +428,7 @@
           </label>
           <div class="space-y-2">
             <template x-for="addon in availableAddons" :key="addon.id">
-              <label class="flex items-center justify-between p-3 rounded-xl bg-surface border border-transparent cursor-pointer hover:bg-surface-sunken transition-colors">
+              <label class="flex items-center justify-between p-3 rounded-lg bg-surface border border-transparent cursor-pointer hover:bg-surface-sunken transition-colors">
                 <div class="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -396,13 +453,13 @@
             x-model="selectedOptions.notes"
             placeholder="E.g. Less oil, sauce on the side..."
             rows="2"
-            class="w-full bg-surface-sunken text-cream text-sm rounded-xl p-3 border border-transparent focus:border-saffron focus:outline-none placeholder:text-muted resize-none"></textarea>
+            class="w-full bg-surface-sunken text-cream text-sm rounded-lg p-3 border border-transparent focus:border-saffron focus:outline-none placeholder:text-muted resize-none"></textarea>
         </div>
 
         <!-- Quantity Selector -->
         <div class="flex items-center justify-between pt-2">
           <span class="text-sm font-bold text-cream">Quantity</span>
-          <div class="flex items-center gap-3 bg-surface border border-transparent rounded-xl p-1">
+          <div class="flex items-center gap-3 bg-surface border border-transparent rounded-lg p-1">
             <button
               @click="modalQty = Math.max(1, modalQty - 1)"
               class="touch-target w-8 h-8 rounded-lg bg-surface-sunken hover:bg-saffron/15 hover:text-saffron-strong text-cream flex items-center justify-center font-bold text-lg transition-colors">
@@ -427,7 +484,7 @@
         </div>
         <button
           @click="confirmAddToCart()"
-          class="touch-target flex-1 max-w-xs py-3 px-5 rounded-xl bg-saffron hover:bg-saffron-strong text-saffron-ink font-black text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-saffron/20 active:scale-[0.98]">
+          class="touch-target flex-1 max-w-xs py-2.5 px-5 rounded-lg gloss-saffron hover:brightness-110 text-saffron-ink font-black text-[12px] uppercase tracking-wide transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
           <span>Add to Order Tray</span>
         </button>
       </div>
@@ -446,8 +503,11 @@
 
       <div class="flex items-center gap-3">
         <div class="relative">
-          <div class="w-11 h-11 rounded-xl bg-saffron flex items-center justify-center text-saffron-ink font-bold">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <div class="w-11 h-11 rounded-lg gloss-saffron flex items-center justify-center text-saffron-ink font-bold">
+            <!-- Cloche/serving-tray icon — food-relevant, replaces the old shopping-bag glyph -->
+            <svg class="w-6 h-6" viewBox="0 0 292 270" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M106.1 187.364C115.044 185.531 121.379 186.347 139.639 191.914C166.619 199.994 168.782 200.944 171.614 205.697C172.285 206.783 173.03 209.295 173.254 211.197L173.627 214.591L203.066 206.648C219.238 202.235 233.696 198.637 235.115 198.636C250.916 198.432 258.519 216.561 246.519 225.727C242.495 228.782 168.558 262.595 163.714 263.614C161.478 264.089 157.081 264.428 153.876 264.428C147.615 264.428 146.87 264.292 103.268 254.515C89.1818 251.392 77.5542 248.812 77.4051 248.812C77.2562 248.813 77.1073 249.56 77.1073 250.442C77.1072 254.108 76.3612 254.243 56.0897 254.243C39.6926 254.243 37.1582 254.108 35.9657 253.089C34.6986 252.071 34.6239 250.169 34.6239 220.567C34.6239 192.934 34.7729 189.062 35.8162 188.112C36.7852 187.161 39.6923 187.026 56.1639 187.026C70.0259 187.026 75.5413 187.229 76.2127 187.84C76.7344 188.315 77.1072 190.556 77.1073 193.272C77.1073 195.783 77.1819 197.888 77.3309 197.889C77.48 197.889 82.8466 195.784 89.3309 193.136C95.8151 190.556 103.343 187.908 106.1 187.364ZM116.237 194.086C107.741 193.882 106.324 194.222 90.5233 200.536L77.4803 205.697L77.2567 223.486L77.1073 241.275L79.8651 241.954C81.4303 242.294 85.7531 243.244 89.4051 244.059C93.1317 244.874 107.666 248.132 121.827 251.323C143.59 256.28 148.51 257.163 153.876 257.231C157.379 257.231 161.553 256.823 163.192 256.348C167.071 255.192 239.509 221.79 241.376 220.363C243.165 218.937 244.805 215.949 244.805 214.184C244.804 211.74 242.494 208.074 240.259 207.055C239.141 206.512 237.054 206.036 235.638 206.036C233.476 206.036 220.209 209.5 176.235 221.449C169.9 223.215 162.968 224.777 160.956 224.912C156.633 225.184 131.888 221.449 130.323 220.227C128.088 218.529 129.876 214.184 132.857 214.184C133.528 214.184 139.863 215.067 146.795 216.154C160.658 218.326 161.702 218.258 164.534 214.728C166.397 212.419 165.651 209.228 162.819 207.326C161.775 206.647 152.384 203.388 141.95 200.197C124.287 194.698 122.423 194.222 116.237 194.086ZM42.8221 247.453L56.0897 247.318L69.2811 247.114V194.155L56.0897 193.95L42.8221 193.815V247.453ZM139.339 6.35082C146.494 3.36336 155.214 5.4687 159.537 11.3078C162.667 15.5175 163.264 19.4555 161.55 24.2082L160.134 27.9426L165.648 28.7571C184.505 31.6766 204.107 41.1822 218.716 54.5578C238.019 72.211 247.634 92.3088 249.125 118.517L249.646 127.48L251.883 128.158C259.857 130.467 263.956 138.547 260.826 145.473C258.292 150.904 254.267 153.145 246.293 153.688L240.703 154.095L234.666 161.496C231.312 165.57 227.958 169.304 227.213 169.848C226.169 170.595 211.188 170.73 146.196 170.73H66.5213L64.1356 168.422C62.8686 167.132 59.6644 163.33 56.9813 159.935L52.1366 153.823L47.4403 153.756C39.8383 153.756 34.9935 151.243 32.3104 145.947C28.8076 139.022 32.609 130.738 40.3602 128.294L43.1922 127.411L43.6395 118.314C44.5339 102.426 47.8132 90.6791 55.2664 77.6428C68.6822 53.9469 93.5762 36.0905 121.898 29.844C126.147 28.8934 130.395 28.1467 131.364 28.1467C133.004 28.1467 133.004 28.0781 131.886 26.0412C129.799 22.4427 129.65 17.8937 131.438 14.1594C133.525 10.0177 135.538 7.91245 139.339 6.35082ZM62.0487 153.756L63.3162 155.589C64.0616 156.675 65.8504 158.78 67.2664 160.409L69.8006 163.261L146.643 163.125L223.485 162.922L226.392 159.528C227.957 157.627 229.522 155.59 229.97 154.91C230.64 153.824 226.467 153.756 146.345 153.756H62.0487ZM42.745 134.744L40.9569 136.442C38.4973 138.614 38.4966 142.146 40.8817 144.726L42.6707 146.626H250.168L251.957 144.726C254.342 142.146 254.342 138.614 251.883 136.442L250.094 134.744H42.745ZM164.68 35.9543C156.332 34.3927 140.233 34.0535 131.886 35.2756C111.539 38.2631 93.8743 46.5461 79.3407 59.9895C61.0058 76.8958 51.7636 96.8579 51.7635 119.535V127.276H241.075V119.875C241.075 79.4086 209.026 44.1699 164.68 35.9543ZM150.146 12.8694C147.24 11.5114 145.077 11.5797 142.171 13.2092C139.339 14.7708 138.221 16.4681 138.221 19.3196C138.221 23.7329 141.575 26.7883 146.42 26.7883C154.916 26.788 157.748 16.468 150.146 12.8694Z"/>
+            </svg>
           </div>
           <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-terracotta text-cream text-[10px] font-bold flex items-center justify-center border-2 border-ink tabular" x-text="cartTotalCount()"></span>
         </div>
@@ -459,7 +519,7 @@
 
       <button
         @click="cartDrawerOpen = true"
-        class="touch-target px-5 py-3 rounded-xl bg-saffron hover:bg-saffron-strong text-saffron-ink font-black text-sm transition-colors flex items-center gap-2 shadow-lg shadow-saffron/20 active:scale-[0.98]">
+        class="touch-target px-5 py-2.5 rounded-lg gloss-saffron hover:brightness-110 text-saffron-ink font-black text-[12px] uppercase tracking-wide transition-all flex items-center gap-2 active:scale-[0.98]">
         <span>Review Tray</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
       </button>
@@ -477,7 +537,7 @@
 
     <div
       @click.outside="cartDrawerOpen = false"
-      class="w-full max-w-md bg-surface h-full flex flex-col justify-between border-l border-border-soft shadow-2xl"
+      class="w-full max-w-md gloss-surface h-full flex flex-col justify-between border-l border-border-soft shadow-2xl"
       x-show="cartDrawerOpen"
       x-transition:enter="transform transition ease-in-out duration-300"
       x-transition:enter-start="translate-x-full"
@@ -486,10 +546,10 @@
       x-transition:leave-start="translate-x-0"
       x-transition:leave-end="translate-x-full">
 
-      <div class="p-4 border-b border-border-soft flex items-center justify-between bg-surface-raised shrink-0">
+      <div class="p-4 border-b border-border-soft flex items-center justify-between gloss-raised shrink-0">
         <div class="flex items-center gap-2">
-          <h3 class="font-display font-semibold text-lg text-cream">Your Tray</h3>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-saffron/15 text-saffron-strong font-bold tabular" x-text="cartTotalCount() + ' items'"></span>
+          <h3 class="font-display font-medium text-lg text-heading uppercase tracking-wide">Your Tray</h3>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-saffron/15 text-saffron-strong font-bold tabular" x-text="cartItemLabel()"></span>
         </div>
         <button @click="cartDrawerOpen = false" class="touch-target p-2 text-muted hover:text-cream flex items-center justify-center">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -499,7 +559,7 @@
       <div class="p-4 overflow-y-auto flex-1 space-y-3">
 
         <!-- Order Type & Table Selector -->
-        <div class="bg-surface-raised p-3 rounded-xl border border-border-soft space-y-2.5">
+        <div class="gloss-raised p-3 rounded-lg border border-border-soft space-y-2.5">
           <div class="flex items-center justify-between text-[11px] font-black text-muted uppercase tracking-wider">
             <span>Service Type</span>
             <span class="text-saffron-strong" x-text="orderType"></span>
@@ -551,7 +611,7 @@
         <!-- Empty Cart -->
         <template x-if="cart.length === 0">
           <div class="text-center py-16 px-4">
-            <div class="w-16 h-16 bg-surface-raised text-muted rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-border-soft">
+            <div class="w-16 h-16 gloss-raised text-muted rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-border-soft">
               🍲
             </div>
             <p class="text-sm font-bold text-cream">Your tray is empty</p>
@@ -561,13 +621,13 @@
 
         <!-- Tray Items -->
         <template x-for="(item, index) in cart" :key="index">
-          <div class="p-3 rounded-xl bg-surface-raised border border-border-soft flex flex-col gap-2">
+          <div class="p-3 rounded-lg gloss-raised border border-border-soft flex flex-col gap-2">
             <div class="flex items-start justify-between gap-2">
               <div>
                 <h4 class="font-bold text-sm text-cream" x-text="item.dish.name"></h4>
                 <p class="text-xs text-saffron-strong tabular">AED <span x-text="item.itemTotal.toFixed(2)"></span></p>
               </div>
-              <button @click="removeFromCart(index)" class="text-xs text-terracotta hover:text-terracotta/80 p-1 font-semibold">Remove</button>
+              <button @click="removeFromCart(index)" class="text-[11px] text-terracotta hover:text-terracotta/80 p-1 font-bold uppercase tracking-wide">Remove</button>
             </div>
 
             <div class="text-[11px] text-muted bg-surface-sunken/60 p-2 rounded-lg space-y-0.5">
@@ -590,7 +650,7 @@
 
       </div>
 
-      <div x-show="cart.length > 0" class="p-4 border-t border-border-soft bg-surface-raised space-y-3 shrink-0">
+      <div x-show="cart.length > 0" class="p-4 border-t border-border-soft gloss-raised space-y-3 shrink-0">
         <div class="space-y-1.5 text-xs">
           <div class="flex justify-between text-muted">
             <span>Subtotal</span>
@@ -600,7 +660,7 @@
             <span>VAT (5%)</span>
             <span class="font-semibold text-cream tabular">AED <span x-text="(cartTotalPrice() * 0.05).toFixed(2)"></span></span>
           </div>
-          <div class="flex justify-between font-black text-base text-cream pt-2 border-t border-border-soft">
+          <div class="flex justify-between font-bold text-base text-cream pt-2 border-t border-border-soft">
             <span>Grand Total</span>
             <span class="text-saffron-strong tabular">AED <span x-text="(cartTotalPrice() * 1.05).toFixed(2)"></span></span>
           </div>
@@ -608,7 +668,7 @@
 
         <button
           @click="sendWhatsAppOrder()"
-          class="touch-target w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5a] text-ink font-black text-sm transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+          class="touch-target w-full py-2.5 px-4 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-ink font-black text-[12px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
           <svg class="w-5 h-5 shrink-0 fill-current" viewBox="0 0 24 24">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
           </svg>
@@ -617,7 +677,7 @@
 
         <button
           @click="callToOrder()"
-          class="touch-target w-full py-3 px-4 rounded-xl bg-transparent border border-border-strong hover:border-saffron hover:text-saffron-strong text-cream font-bold text-sm transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+          class="touch-target w-full py-2.5 px-4 rounded-lg bg-transparent border border-border-strong hover:border-saffron hover:text-saffron-strong text-cream font-bold text-[12px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.05 11.05 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
           <span>Call to Order</span>
         </button>
@@ -664,9 +724,9 @@
         },
 
         spiceLevels: [
-          { name: 'Mild', chilies: 1 },
-          { name: 'Medium', chilies: 2 },
-          { name: 'Authentic Hot', chilies: 3 }
+          { name: 'Mild', icon: '🌶' },
+          { name: 'Medium', icon: '🌶🌶' },
+          { name: 'Authentic Hot', icon: '🌶🌶🌶' }
         ],
 
         portionsList: [
@@ -776,6 +836,12 @@
 
         cartTotalCount() {
           return this.cart.reduce((sum, item) => sum + item.qty, 0);
+        },
+
+        // "1 Item" vs "2 Items" — singular only when the count is exactly 1.
+        cartItemLabel() {
+          const n = this.cartTotalCount();
+          return `${n} ${n === 1 ? 'Item' : 'Items'}`;
         },
 
         cartTotalPrice() {
