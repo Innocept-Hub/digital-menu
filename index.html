@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>BITEit — Browse. Choose. Savor.</title>
+  <meta name="description" content="BITEit — Browse. Choose. Savor. Digital menu and instant WhatsApp ordering.">
+  <meta name="theme-color" content="#14170F">
+
+  <!-- Google Fonts: Fraunces (dish names/headers), Mulish (UI), JetBrains Mono (prices/numbers) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Mulish:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'ink': '#14170F',
+            'surface': '#1E2417',
+            'surface-raised': '#262E1D',
+            'surface-sunken': '#10130C',
+            'border-soft': '#2C331D',
+            'border-strong': '#384021',
+            'saffron': '#D7A64A',
+            'saffron-strong': '#E8BC63',
+            'saffron-ink': '#1C1500',
+            'terracotta': '#E2703C',
+            'moss': '#93B85A',
+            'tan': '#C7B48C',
+            'cream': '#F4EDE0',
+            'muted': '#8C8770',
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['Mulish', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Alpine.js Focus Plugin & Core CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+
+    body {
+      background-color: #14170F;
+      color: #F4EDE0;
+      font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Fraunces', Georgia, serif;
+    }
+
+    .tabular {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    ::selection { background: #D7A64A; color: #1C1500; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .touch-target { min-width: 44px; min-height: 44px; }
+
+    .glass-nav {
+      background: rgba(30, 36, 23, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Image slot placeholder — reads as "photo pending", not permanent decoration */
+    .photo-slot {
+      background: linear-gradient(135deg, #262E1D 0%, #171B10 100%);
+      position: relative;
+    }
+    .photo-slot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(199,180,140,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(199,180,140,0.05) 1px, transparent 1px);
+      background-size: 14px 14px;
+    }
+    .photo-slot .photo-slot-mark {
+      position: relative;
+      z-index: 1;
+      color: rgba(199,180,140,0.32);
+    }
+
+    :focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(215,166,74,0.4);
+      border-radius: 6px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body x-data="menuApp()" x-init="initApp()" class="min-h-screen pb-28 antialiased selection:bg-saffron selection:text-saffron-ink">
+
+  <!-- ==================== HEADER & NAVBAR ==================== -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-border-soft">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+
+      <!-- Brand Logo / Name -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-saffron/15 border border-saffron/40 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-saffron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v4l3 3"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-display font-semibold text-lg sm:text-xl tracking-wide text-cream leading-tight" x-text="restaurant.name">BITEit</h1>
+          <p class="text-xs text-muted flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-moss inline-block animate-pulse"></span>
+            <span x-text="restaurant.tagline">Browse. Choose. Savor.</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Utilities -->
+      <div class="flex items-center gap-2">
+        <button
+          @click="searchOpen = !searchOpen"
+          class="touch-target p-2.5 rounded-xl bg-surface border border-border-soft text-cream hover:border-saffron/50 transition-colors flex items-center justify-center"
+          aria-label="Toggle Search">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Expandable Search Bar -->
+    <div x-show="searchOpen" x-collapse x-cloak class="border-t border-border-soft bg-surface/95 px-4 py-3">
+      <div class="max-w-md mx-auto relative">
+        <input
+          type="text"
+          x-model="searchQuery"
+          placeholder="Search dishes, ingredients, or tags (e.g. Biryani, Vegan)..."
+          class="w-full bg-surface-sunken text-cream text-sm rounded-xl pl-10 pr-10 py-3 border border-border-soft focus:border-saffron focus:outline-none focus:ring-1 focus:ring-saffron placeholder:text-muted"
+        >
+        <svg class="w-5 h-5 text-muted absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <button x-show="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-3.5 text-muted hover:text-cream">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+
+    <!-- ==================== HERO BANNER ==================== -->
+    <div class="relative rounded-2xl overflow-hidden border border-border-soft bg-gradient-to-r from-surface to-surface-raised p-6 mb-6">
+      <div class="relative z-10 max-w-2xl">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-saffron/15 text-saffron-strong border border-saffron/30 mb-3" x-text="restaurant.tagline">
+          Browse. Choose. Savor.
+        </span>
+        <h2 class="font-display font-semibold text-2xl sm:text-3xl text-cream leading-tight mb-2" style="text-wrap: balance;">
+          Savor Exceptional Culinary Craftsmanship
+        </h2>
+        <p class="text-xs sm:text-sm text-muted">
+          All prices are in UAE Dirhams (AED) and inclusive of VAT and municipal fees.
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== CATEGORY FILTER TABS ==================== -->
+    <div class="sticky top-[61px] z-20 glass-nav -mx-4 px-4 py-3 mb-6 border-b border-border-soft overflow-x-auto no-scrollbar flex items-center gap-2">
+      <button
+        @click="activeCategory = 'all'"
+        :class="activeCategory === 'all' ? 'bg-saffron text-saffron-ink font-extrabold border-saffron' : 'bg-surface text-tan border-border-soft hover:text-cream hover:border-border-strong'"
+        class="touch-target px-5 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
+        All Items
+      </button>
+
+      <template x-for="cat in menuData.categories" :key="cat.id">
+        <button
+          @click="activeCategory = cat.id"
+          :class="activeCategory === cat.id ? 'bg-saffron text-saffron-ink font-extrabold border-saffron' : 'bg-surface text-tan border-border-soft hover:text-cream hover:border-border-strong'"
+          class="touch-target px-5 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all duration-150 shrink-0 flex items-center justify-center font-bold">
+          <span x-text="cat.name"></span>
+        </button>
+      </template>
+    </div>
+
+    <!-- ==================== DISH CARDS GRID ==================== -->
+    <div x-show="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <template x-for="dish in filteredDishes" :key="dish.id">
+        <div class="bg-surface rounded-2xl border border-border-soft hover:border-saffron/40 transition-all duration-200 p-3 flex flex-col group relative overflow-hidden">
+
+          <!-- Photo Slot (4:3 — built for real food photography; badge + price overlay positions are permanent) -->
+          <div class="photo-slot w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-border-soft/50">
+            <span
+              x-show="dish.badge"
+              class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-black tracking-wide uppercase z-10 border"
+              :class="{
+                'bg-ink/85 text-saffron-strong border-saffron/40': dish.badge === 'Chef Special' || dish.badge === 'Signature' || dish.badge === 'Must Try' || dish.badge === 'Fusion',
+                'bg-ink/85 text-moss border-moss/40': dish.badge === 'Popular' || dish.badge === 'Fresh',
+                'bg-ink/85 text-terracotta border-terracotta/40': dish.badge === 'Premium' || dish.badge === 'Spicy'
+              }"
+              x-text="dish.badge">
+            </span>
+
+            <div class="photo-slot-mark absolute inset-0 flex items-center justify-center opacity-40">
+              <svg width="88" height="77" viewBox="0 0 216 189" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M207.258 17.0959C207.894 17.1011 208 29.1529 208 93.7033C208 141.231 207.788 170.832 207.47 171.69C206.727 173.653 204.339 174.661 200.36 174.661C197.496 174.661 196.647 174.449 195.427 173.388L193.941 172.114L193.676 140.866L193.411 109.672L188.264 109.513L183.065 109.354V107.391C182.906 99.1677 183.172 89.0342 183.649 83.6759C186.037 54.7627 193.729 31.0489 204.34 19.4836C205.56 18.1573 206.886 17.0959 207.258 17.0959ZM183.969 132.75C185.03 132.75 184.817 133.705 183.014 136.676C173.57 152.008 156.647 165.217 139.564 170.682C109.59 180.178 77.7047 172.221 56.2186 149.939C51.4973 145.005 46.1928 138.056 46.1922 136.835C46.1922 135.562 47.6243 135.721 48.367 137.047C49.9055 140.018 55.8478 147.021 60.1981 151.106C68.4212 158.851 78.7133 165.005 89.3768 168.56C99.0322 171.796 102.48 172.274 114.894 172.221C126.884 172.221 129.696 171.796 139.829 168.454C155.373 163.414 170.865 151.53 179.99 137.736C181.793 134.978 183.597 132.751 183.969 132.75ZM46.9881 17.0968C47.6777 17.0973 47.784 20.5994 47.784 42.4025C47.784 66.5412 47.7305 67.8149 46.7225 69.884C44.6533 74.181 39.7195 77.5763 35.6346 77.5763H33.3006L33.6717 95.7199C33.8839 105.747 34.2551 122.988 34.5203 134.076C35.3691 168.134 35.3166 170.842 34.2557 172.009C31.9214 174.609 26.5626 175.298 23.5916 173.335C20.5149 171.32 20.6208 174.235 21.7879 125.005C22.3715 100.231 22.8494 79.4351 22.8494 78.7433C22.8494 77.7353 22.5835 77.5763 20.5145 77.5763C15.5278 77.5761 10.0639 73.0137 8.52523 67.6027C7.9417 65.4277 7.78264 18.0591 8.36605 17.4152C9.69235 16.0889 9.85177 18.5289 10.117 42.6144C10.4353 70.6781 10.2229 69.2469 14.3075 72.9601C16.5887 75.0291 17.4909 75.3482 21.9471 75.9318L24.7059 76.2502L24.6004 82.6164C24.5473 86.1188 24.0691 107.233 23.5916 129.461C22.6898 169.778 22.69 169.993 23.7508 171.054C25.8729 173.123 31.6563 172.751 32.9295 170.417C33.1945 169.879 32.9817 152.639 32.3983 126.331C31.8147 102.565 31.3378 81.5566 31.3377 79.5392V75.9845H33.2479C38.2876 75.9844 42.5315 73.544 44.7596 69.4592C45.9268 67.284 45.9266 66.9123 46.0858 42.1369C46.1919 20.651 46.3515 17.0968 46.9881 17.0968ZM203.703 23.1965C194.737 35.6637 189.166 52.853 186.302 76.7795C185.506 83.2518 184.657 96.4089 184.657 102.351V107.232L189.856 107.391L195.002 107.55L195.161 139.063C195.267 167.499 195.374 170.682 196.17 171.584C196.859 172.327 197.814 172.539 200.838 172.539C203.437 172.539 204.87 172.327 205.295 171.796C205.719 171.259 205.824 150.991 205.771 95.8254L205.612 20.5968L203.703 23.1965ZM107.997 36.2482C130.915 33.7019 154.046 45.6917 164.922 65.7453C174.153 82.6689 174.524 102.033 166.089 119.222C158.661 134.236 145.664 145.005 129.377 149.515C123.276 151.212 111.604 151.849 105.184 150.788C93.0356 148.825 82.0008 143.095 73.1942 133.97C61.9474 122.405 56.8016 109.725 56.8016 93.757C56.8016 81.4489 59.8781 71.2624 66.5096 61.3947C75.9529 47.389 91.3386 38.052 107.997 36.2482ZM127.997 39.59C122.214 38.1046 111.816 37.4687 106.458 38.3175C94.256 40.2805 83.3804 45.7977 74.9452 54.339C69.7991 59.5381 67.0928 63.4106 63.9627 69.883C53.8828 90.7325 57.9687 115.455 74.2557 132.379C96.1663 155.138 132.507 155.244 154.205 132.644C161.155 125.429 164.656 119.54 167.574 110.362C171.924 96.7811 170.863 82.4036 164.497 69.3527C157.282 54.4451 144.125 43.7281 127.997 39.59ZM34.4149 17.2023C35.2633 17.3618 35.3166 18.7431 35.4227 35.3986C35.5288 45.3194 35.3696 53.7554 35.1043 54.1799C33.6721 56.4076 33.4598 53.7544 33.4598 35.6115C33.4598 18.2104 33.513 17.0432 34.4149 17.2023ZM20.993 17.7326C21.1522 17.3082 21.5767 17.0959 21.9481 17.255C22.4252 17.4167 22.5838 21.6099 22.5838 35.9826C22.5838 52.1068 22.4782 54.4962 21.7889 54.4972C21.0992 54.4972 20.993 52.0573 20.8338 36.4601C20.7808 26.5394 20.8338 18.104 20.993 17.7326ZM101.632 13.6476C107.786 12.5335 124.338 12.9054 130.81 14.3908C146.779 17.9453 160.043 25.1598 171.502 36.5129C175.958 40.9162 176.648 41.9251 175.799 42.7209C175.637 42.9299 172.826 40.4906 169.539 37.3625C152.668 21.0224 131.023 13.117 108.157 14.9738C92.4006 16.2471 77.2275 22.2422 64.9725 32.0568C62.9566 33.6483 60.9936 35.3459 60.5692 35.8234C59.7203 36.9375 58.3944 36.9906 58.3944 35.9826C58.395 34.9212 63.8057 30.1996 69.2166 26.5392C79.2965 19.8016 88.634 16.088 101.632 13.6476Z" fill="#D1B48C"/>
+              </svg>
+            </div>
+
+            <div class="absolute bottom-2 right-2 bg-ink/85 border border-border-soft text-saffron-strong font-bold text-xs px-2.5 py-1 rounded-lg tabular z-10">
+              AED <span x-text="dish.price.toFixed(2)"></span>
+            </div>
+
+            <!-- Dietary Tag Badge -->
+            <span
+              x-show="dish.isVeg"
+              class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-moss/15 border border-moss/40 text-[10px] font-black text-moss z-10">
+              VEG
+            </span>
+            <span
+              x-show="!dish.isVeg"
+              class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-terracotta/15 border border-terracotta/40 text-[10px] font-black text-terracotta z-10">
+              NON-VEG
+            </span>
+          </div>
+
+          <!-- Dish Details Content -->
+          <div class="flex-1 flex flex-col justify-between min-w-0">
+            <div>
+              <h3 class="font-display font-semibold text-cream text-base leading-snug mb-1" x-text="dish.name"></h3>
+              <p class="text-xs text-muted line-clamp-2 mb-2 leading-relaxed" x-text="dish.description"></p>
+
+              <!-- Dietary & Chef Tags (excludes whatever's already shown as the badge above, so nothing repeats) -->
+              <div class="flex flex-wrap gap-1 mb-3">
+                <template x-for="tag in dish.tags.filter(t => t !== dish.badge)" :key="tag">
+                  <span class="text-[10px] px-2 py-0.5 rounded-md bg-surface-sunken text-tan border border-border-soft/60 font-semibold" x-text="tag"></span>
+                </template>
+              </div>
+            </div>
+
+            <!-- Add Trigger Action -->
+            <button
+              @click="openOptionModal(dish)"
+              class="touch-target w-full py-2.5 rounded-xl bg-transparent hover:bg-saffron/10 text-cream border border-border-strong hover:border-saffron font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+              <span>+ ADD TO TRAY</span>
+            </button>
+          </div>
+
+        </div>
+      </template>
+    </div>
+
+    <!-- Empty State -->
+    <div x-show="!isLoading && filteredDishes.length === 0" class="text-center py-16 px-4">
+      <h3 class="font-display font-semibold text-lg text-cream mb-1">No Matching Items Found</h3>
+      <p class="text-xs text-muted mb-4">Try clearing your search query or selecting a different category.</p>
+      <button
+        @click="searchQuery = ''; activeCategory = 'all'"
+        class="px-4 py-2 rounded-xl bg-saffron text-saffron-ink font-extrabold text-xs">
+        Reset Menu Filters
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ==================== MODAL: CUSTOMIZATION ==================== -->
+  <div
+    x-show="modalOpen"
+    x-trap.noscroll="modalOpen"
+    x-cloak
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/85 backdrop-blur-sm"
+    x-transition.opacity>
+
+    <div
+      @click.outside="modalOpen = false"
+      class="w-full sm:max-w-lg bg-surface-raised border border-border-soft rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-border-soft flex items-center justify-between bg-ink/40">
+        <div>
+          <h3 class="font-display font-semibold text-lg text-cream" x-text="selectedDish?.name"></h3>
+          <p class="text-xs text-saffron-strong font-bold tabular mt-0.5">AED <span x-text="selectedDish?.price.toFixed(2)"></span></p>
+        </div>
+        <button @click="modalOpen = false" class="touch-target p-2 text-muted hover:text-cream flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 overflow-y-auto space-y-5 flex-1">
+
+        <!-- Portion Selection -->
+        <div>
+          <label class="flex items-center gap-1.5 text-[11px] font-black text-saffron-strong uppercase tracking-wider mb-2.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 00-5 5v2a5 5 0 0010 0V7a5 5 0 00-5-5zM7 13v3a5 5 0 0010 0v-3"/></svg>
+            Select Portion
+          </label>
+          <div class="space-y-2">
+            <template x-for="portion in portionsList" :key="portion.name">
+              <label @click="selectedOptions.portion = portion.name"
+                     :class="selectedOptions.portion === portion.name
+                       ? 'border-saffron bg-saffron/10 text-cream font-bold'
+                       : 'border-transparent bg-surface text-tan hover:bg-surface-sunken'"
+                     class="flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-4 h-4 rounded-full border flex items-center justify-center transition-colors"
+                       :class="selectedOptions.portion === portion.name ? 'border-saffron bg-saffron' : 'border-tan/40'">
+                    <div x-show="selectedOptions.portion === portion.name" class="w-1.5 h-1.5 rounded-full bg-saffron-ink"></div>
+                  </div>
+                  <span class="text-sm" x-text="portion.name"></span>
+                </div>
+                <span class="text-[11px] text-muted font-semibold tabular" x-text="portion.tag"></span>
+              </label>
+            </template>
+          </div>
+        </div>
+
+        <!-- Spice Level -->
+        <div>
+          <label class="block text-xs font-black text-saffron-strong uppercase tracking-wider mb-2">Spice Level</label>
+          <div class="grid grid-cols-3 gap-2">
+            <template x-for="spice in spiceLevels" :key="spice.name">
+              <button
+                type="button"
+                @click="selectedOptions.spice = spice.name"
+                :class="selectedOptions.spice === spice.name ? 'bg-saffron text-saffron-ink font-black border-saffron' : 'bg-surface text-tan border-transparent hover:bg-surface-sunken'"
+                class="touch-target py-2 px-2 text-xs rounded-xl border transition-colors flex flex-col items-center justify-center gap-1 text-center">
+                <span class="flex gap-0.5" :class="selectedOptions.spice === spice.name ? 'text-saffron-ink' : 'text-terracotta'">
+                  <template x-for="n in spice.chilies" :key="n">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 3c-1 2-3 2.5-4.5 4-2.5 2.5-3 6-1 8s5.5 1.5 8-1c1.5-1.5 2-3.5 4-4.5-1.5 0-3.5-.3-5-1.8-1-1-1.3-2.7.5-4.7z"/></svg>
+                  </template>
+                </span>
+                <span x-text="spice.name"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Add-on Extras -->
+        <div>
+          <label class="flex items-center gap-1.5 text-xs font-black text-saffron-strong uppercase tracking-wider mb-2">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add-ons &amp; Extras
+          </label>
+          <div class="space-y-2">
+            <template x-for="addon in availableAddons" :key="addon.id">
+              <label class="flex items-center justify-between p-3 rounded-xl bg-surface border border-transparent cursor-pointer hover:bg-surface-sunken transition-colors">
+                <div class="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    :value="addon.id"
+                    x-model="selectedOptions.addons"
+                    class="w-4 h-4 rounded border-tan/40 text-saffron focus:ring-saffron bg-surface-sunken">
+                  <span class="text-sm text-cream" x-text="addon.name"></span>
+                </div>
+                <span class="text-xs font-bold text-saffron-strong tabular">+AED <span x-text="addon.price.toFixed(2)"></span></span>
+              </label>
+            </template>
+          </div>
+        </div>
+
+        <!-- Special Notes -->
+        <div>
+          <label class="flex items-center gap-1.5 text-xs font-black text-saffron-strong uppercase tracking-wider mb-2">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 013 3L12 16l-4 1 1-4 9.5-9.5z"/></svg>
+            Special Instructions
+          </label>
+          <textarea
+            x-model="selectedOptions.notes"
+            placeholder="E.g. Less oil, sauce on the side..."
+            rows="2"
+            class="w-full bg-surface-sunken text-cream text-sm rounded-xl p-3 border border-transparent focus:border-saffron focus:outline-none placeholder:text-muted resize-none"></textarea>
+        </div>
+
+        <!-- Quantity Selector -->
+        <div class="flex items-center justify-between pt-2">
+          <span class="text-sm font-bold text-cream">Quantity</span>
+          <div class="flex items-center gap-3 bg-surface border border-transparent rounded-xl p-1">
+            <button
+              @click="modalQty = Math.max(1, modalQty - 1)"
+              class="touch-target w-8 h-8 rounded-lg bg-surface-sunken hover:bg-saffron/15 hover:text-saffron-strong text-cream flex items-center justify-center font-bold text-lg transition-colors">
+              -
+            </button>
+            <span class="w-6 text-center text-sm font-bold text-cream tabular" x-text="modalQty"></span>
+            <button
+              @click="modalQty++"
+              class="touch-target w-8 h-8 rounded-lg bg-surface-sunken hover:bg-saffron/15 hover:text-saffron-strong text-cream flex items-center justify-center font-bold text-lg transition-colors">
+              +
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-border-soft bg-ink/40 flex items-center justify-between gap-4">
+        <div>
+          <span class="text-xs text-muted block">Total</span>
+          <span class="font-bold text-saffron-strong text-lg tabular">AED <span x-text="calculateModalTotal().toFixed(2)"></span></span>
+        </div>
+        <button
+          @click="confirmAddToCart()"
+          class="touch-target flex-1 max-w-xs py-3 px-5 rounded-xl bg-saffron hover:bg-saffron-strong text-saffron-ink font-black text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-saffron/20 active:scale-[0.98]">
+          <span>Add to Order Tray</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== STICKY CART BAR ==================== -->
+  <div
+    x-show="cart.length > 0"
+    x-transition:enter="transition ease-out duration-300 transform"
+    x-transition:enter-start="translate-y-full"
+    x-transition:enter-end="translate-y-0"
+    class="fixed bottom-0 left-0 right-0 z-40 p-4 glass-nav border-t border-border-soft">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <div class="w-11 h-11 rounded-xl bg-saffron flex items-center justify-center text-saffron-ink font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          </div>
+          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-terracotta text-cream text-[10px] font-bold flex items-center justify-center border-2 border-ink tabular" x-text="cartTotalCount()"></span>
+        </div>
+        <div>
+          <span class="text-xs text-muted block">Total Amount</span>
+          <span class="font-bold text-saffron-strong text-lg tabular">AED <span x-text="cartTotalPrice().toFixed(2)"></span></span>
+        </div>
+      </div>
+
+      <button
+        @click="cartDrawerOpen = true"
+        class="touch-target px-5 py-3 rounded-xl bg-saffron hover:bg-saffron-strong text-saffron-ink font-black text-sm transition-colors flex items-center gap-2 shadow-lg shadow-saffron/20 active:scale-[0.98]">
+        <span>Review Tray</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ==================== DRAWER: CART & CHECKOUT ==================== -->
+  <div
+    x-show="cartDrawerOpen"
+    x-trap.noscroll="cartDrawerOpen"
+    x-cloak
+    class="fixed inset-0 z-50 flex justify-end bg-ink/85 backdrop-blur-sm"
+    x-transition.opacity>
+
+    <div
+      @click.outside="cartDrawerOpen = false"
+      class="w-full max-w-md bg-surface h-full flex flex-col justify-between border-l border-border-soft shadow-2xl"
+      x-show="cartDrawerOpen"
+      x-transition:enter="transform transition ease-in-out duration-300"
+      x-transition:enter-start="translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transform transition ease-in-out duration-300"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="translate-x-full">
+
+      <div class="p-4 border-b border-border-soft flex items-center justify-between bg-surface-raised shrink-0">
+        <div class="flex items-center gap-2">
+          <h3 class="font-display font-semibold text-lg text-cream">Your Tray</h3>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-saffron/15 text-saffron-strong font-bold tabular" x-text="cartTotalCount() + ' items'"></span>
+        </div>
+        <button @click="cartDrawerOpen = false" class="touch-target p-2 text-muted hover:text-cream flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto flex-1 space-y-3">
+
+        <!-- Order Type & Table Selector -->
+        <div class="bg-surface-raised p-3 rounded-xl border border-border-soft space-y-2.5">
+          <div class="flex items-center justify-between text-[11px] font-black text-muted uppercase tracking-wider">
+            <span>Service Type</span>
+            <span class="text-saffron-strong" x-text="orderType"></span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1.5 bg-surface-sunken p-1 rounded-lg border border-border-soft">
+            <button @click="orderType = 'Dine-In'"
+                    :class="orderType === 'Dine-In' ? 'bg-saffron text-saffron-ink font-black' : 'text-muted hover:text-cream'"
+                    class="py-1.5 rounded-md text-[11px] text-center transition-colors font-bold flex flex-col items-center gap-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+              <span>Dine-In</span>
+            </button>
+            <button @click="orderType = 'Takeaway'"
+                    :class="orderType === 'Takeaway' ? 'bg-saffron text-saffron-ink font-black' : 'text-muted hover:text-cream'"
+                    class="py-1.5 rounded-md text-[11px] text-center transition-colors font-bold flex flex-col items-center gap-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 8h12l-1 12H7L6 8zM9 8V6a3 3 0 016 0v2"/></svg>
+              <span>Takeaway</span>
+            </button>
+            <button @click="orderType = 'Delivery'"
+                    :class="orderType === 'Delivery' ? 'bg-saffron text-saffron-ink font-black' : 'text-muted hover:text-cream'"
+                    class="py-1.5 rounded-md text-[11px] text-center transition-colors font-bold flex flex-col items-center gap-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11v8H3zM14 10h4l3 3v2h-7zM6.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM17.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+              <span>Delivery</span>
+            </button>
+          </div>
+
+          <div x-show="orderType === 'Dine-In'" class="flex items-center justify-between pt-1 text-xs">
+            <span class="text-muted">Table Number:</span>
+            <input type="text" x-model="tableNumber" class="bg-surface-sunken border border-border-soft rounded-lg px-2.5 py-1 text-xs text-saffron-strong font-bold w-24 text-right focus:outline-none focus:border-saffron tabular">
+          </div>
+
+          <!-- Takeaway / Delivery contact details -->
+          <div x-show="orderType === 'Takeaway' || orderType === 'Delivery'" class="pt-1 space-y-2 text-xs">
+            <div>
+              <span class="text-muted block mb-1">Your Name:</span>
+              <input type="text" x-model="customerName" placeholder="e.g. Ahmed" class="w-full bg-surface-sunken border border-border-soft rounded-lg px-2.5 py-1.5 text-cream placeholder:text-muted focus:outline-none focus:border-saffron">
+            </div>
+            <div>
+              <span class="text-muted block mb-1">Phone Number:</span>
+              <input type="tel" x-model="customerPhone" placeholder="e.g. 050 123 4567" class="w-full bg-surface-sunken border border-border-soft rounded-lg px-2.5 py-1.5 text-cream placeholder:text-muted focus:outline-none focus:border-saffron tabular">
+            </div>
+            <div x-show="orderType === 'Delivery'">
+              <span class="text-muted block mb-1">Delivery Address:</span>
+              <textarea x-model="deliveryAddress" rows="2" placeholder="Building, street, area..." class="w-full bg-surface-sunken border border-border-soft rounded-lg px-2.5 py-1.5 text-cream placeholder:text-muted focus:outline-none focus:border-saffron resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty Cart -->
+        <template x-if="cart.length === 0">
+          <div class="text-center py-16 px-4">
+            <div class="w-16 h-16 bg-surface-raised text-muted rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-border-soft">
+              🍲
+            </div>
+            <p class="text-sm font-bold text-cream">Your tray is empty</p>
+            <p class="text-xs text-muted mt-1">Explore the menu and add your favorite dishes.</p>
+          </div>
+        </template>
+
+        <!-- Tray Items -->
+        <template x-for="(item, index) in cart" :key="index">
+          <div class="p-3 rounded-xl bg-surface-raised border border-border-soft flex flex-col gap-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-sm text-cream" x-text="item.dish.name"></h4>
+                <p class="text-xs text-saffron-strong tabular">AED <span x-text="item.itemTotal.toFixed(2)"></span></p>
+              </div>
+              <button @click="removeFromCart(index)" class="text-xs text-terracotta hover:text-terracotta/80 p-1 font-semibold">Remove</button>
+            </div>
+
+            <div class="text-[11px] text-muted bg-surface-sunken/60 p-2 rounded-lg space-y-0.5">
+              <p x-show="item.options.portion">Portion: <span class="text-cream font-semibold" x-text="item.options.portion"></span></p>
+              <p>Spice: <span class="text-cream font-semibold" x-text="item.options.spice"></span></p>
+              <template x-if="item.options.addonsList.length > 0">
+                <p>Extras: <span class="text-cream" x-text="item.options.addonsList.join(', ')"></span></p>
+              </template>
+              <template x-if="item.options.notes">
+                <p>Note: <span class="italic text-cream" x-text="item.options.notes"></span></p>
+              </template>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs text-muted">Qty: <strong class="text-cream tabular" x-text="item.qty"></strong></span>
+              <span class="text-xs font-bold text-cream tabular">Subtotal: AED <span x-text="(item.itemTotal * item.qty).toFixed(2)"></span></span>
+            </div>
+          </div>
+        </template>
+
+      </div>
+
+      <div x-show="cart.length > 0" class="p-4 border-t border-border-soft bg-surface-raised space-y-3 shrink-0">
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between text-muted">
+            <span>Subtotal</span>
+            <span class="font-semibold text-cream tabular">AED <span x-text="cartTotalPrice().toFixed(2)"></span></span>
+          </div>
+          <div class="flex justify-between text-muted">
+            <span>VAT (5%)</span>
+            <span class="font-semibold text-cream tabular">AED <span x-text="(cartTotalPrice() * 0.05).toFixed(2)"></span></span>
+          </div>
+          <div class="flex justify-between font-black text-base text-cream pt-2 border-t border-border-soft">
+            <span>Grand Total</span>
+            <span class="text-saffron-strong tabular">AED <span x-text="(cartTotalPrice() * 1.05).toFixed(2)"></span></span>
+          </div>
+        </div>
+
+        <button
+          @click="sendWhatsAppOrder()"
+          class="touch-target w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5a] text-ink font-black text-sm transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+          <svg class="w-5 h-5 shrink-0 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+          </svg>
+          <span>Order via WhatsApp</span>
+        </button>
+
+        <button
+          @click="callToOrder()"
+          class="touch-target w-full py-3 px-4 rounded-xl bg-transparent border border-border-strong hover:border-saffron hover:text-saffron-strong text-cream font-bold text-sm transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.05 11.05 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          <span>Call to Order</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== ALPINE.JS STATE ENGINE ==================== -->
+  <script>
+    function menuApp() {
+      return {
+        isLoading: false,
+        searchOpen: false,
+        searchQuery: '',
+        activeCategory: 'all',
+        modalOpen: false,
+        cartDrawerOpen: false,
+
+        selectedDish: null,
+        modalQty: 1,
+        selectedOptions: {
+          portion: 'Regular Portion',
+          spice: 'Medium',
+          addons: [],
+          notes: ''
+        },
+
+        // Order fulfillment state (per the Application Architecture doc)
+        orderType: 'Dine-In',
+        tableNumber: 'Table 04',
+        customerName: '',
+        customerPhone: '',
+        deliveryAddress: '',
+
+        cart: [],
+
+        restaurant: {
+          name: 'BITEit',
+          tagline: 'Browse. Choose. Savor.',
+          // Real order number — used for both the WhatsApp deep link and the Call to Order button.
+          // Stored once here so it never has to be edited in two places.
+          whatsappNumber: '971509196975'
+        },
+
+        spiceLevels: [
+          { name: 'Mild', chilies: 1 },
+          { name: 'Medium', chilies: 2 },
+          { name: 'Authentic Hot', chilies: 3 }
+        ],
+
+        portionsList: [
+          { name: 'Regular Portion', price: 0, tag: 'Included' },
+          { name: 'Large Family Portion', price: 22.00, tag: '+ AED 22.00' }
+        ],
+
+        availableAddons: [
+          { id: 'a1', name: 'Extra Truffle Naan', price: 14.00 },
+          { id: 'a2', name: 'Aged Basmati Rice', price: 18.00 },
+          { id: 'a3', name: 'House Mint Chutney', price: 6.00 }
+        ],
+
+        menuData: {
+          categories: [
+            { id: 'starters', name: 'Small Plates & Starters' },
+            { id: 'mains', name: 'Curries & Main Courses' },
+            { id: 'breads', name: 'Artisanal Breads' },
+            { id: 'desserts', name: 'Desserts & Beverages' }
+          ],
+          dishes: [
+            { id: 'd1', category: 'starters', name: 'Truffle Butter Chicken Samosa', price: 42.00, isVeg: false, description: 'Crisp pastry filled with pulled smoked butter chicken and black truffle essence.', tags: ['Chef Special', 'Popular'], badge: 'Chef Special' },
+            { id: 'd2', category: 'starters', name: 'Avocado Bhel Puri', price: 38.00, isVeg: true, description: 'Puffed rice, diced Hass avocado, pomegranate seeds, tamarind mint dressing.', tags: ['Vegan', 'Fresh'], badge: 'Fresh' },
+            { id: 'd3', category: 'mains', name: 'Old Delhi Makhani Paneer', price: 65.00, isVeg: true, description: 'Cottage cheese simmered in a velvet plum tomato cream gravy with dry fenugreek.', tags: ['Vegetarian', 'Classic'], badge: '' },
+            { id: 'd4', category: 'mains', name: '24-Hour Slow Dal BITEit', price: 58.00, isVeg: true, description: 'Black lentils slow-cooked overnight over charcoal embers, finished with white butter.', tags: ['Signature', 'Must Try'], badge: 'Signature' },
+            { id: 'd5', category: 'mains', name: 'Raan-e-Khyber Mutton', price: 95.00, isVeg: false, description: 'Slow-braised lamb leg infused with whole aromatic spices and Kashmiri chili.', tags: ['Premium', 'Spicy'], badge: 'Premium' },
+            { id: 'd6', category: 'breads', name: 'Garlic & Truffle Naan', price: 16.00, isVeg: true, description: 'Tandoor-baked bread topped with roasted garlic and French truffle butter.', tags: ['Freshly Baked'], badge: '' },
+            { id: 'd7', category: 'desserts', name: 'Saffron & Cardamom Kulfi', price: 32.00, isVeg: true, description: 'Traditional condensed milk ice cream topped with crushed pistachios.', tags: ['Sweet', 'Chilled'], badge: '' },
+            // Additional dummy dishes — fills out the grid for layout testing. Names drawn from the
+            // Universal Restaurant Menu Taxonomy (Indian/Pakistani section) so they read as real menu
+            // vocabulary rather than placeholder text. Swap for the actual verified menu before launch.
+            { id: 'd8', category: 'starters', name: 'Amritsari Ajwaini Prawns', price: 62.00, isVeg: false, description: 'Jumbo tiger prawns infused with carom seeds and ginger paste, crisp-fried to order.', tags: ['Seafood', 'Popular'], badge: 'Popular' },
+            { id: 'd9', category: 'starters', name: 'Reshmi Seekh Kebab', price: 46.00, isVeg: false, description: 'Minced lamb skewers with cream, cashew paste, and a whisper of green cardamom.', tags: ['Chef Special'], badge: '' },
+            { id: 'd10', category: 'mains', name: 'Chicken Chettinad', price: 56.00, isVeg: false, description: 'South Indian pepper-and-coconut curry, roasted whole spices, curry leaf tempering.', tags: ['Spicy', 'Regional'], badge: 'Spicy' },
+            { id: 'd11', category: 'mains', name: 'Kashmiri Rogan Josh', price: 72.00, isVeg: false, description: 'Slow-braised lamb in a Kashmiri chili and fennel gravy, finished with warm ghee.', tags: ['Signature'], badge: 'Signature' },
+            { id: 'd12', category: 'mains', name: 'Hyderabadi Vegetable Biryani', price: 52.00, isVeg: true, description: 'Long-grain basmati layered with garden vegetables, saffron, and fried onions.', tags: ['Vegetarian', 'Must Try'], badge: '' },
+            { id: 'd13', category: 'breads', name: 'Laccha Paratha', price: 14.00, isVeg: true, description: 'Multi-layered whole wheat flatbread, crisped on the tawa and finished with ghee.', tags: ['Freshly Baked', 'Classic'], badge: '' },
+            { id: 'd14', category: 'breads', name: 'Cheese & Chili Kulcha', price: 18.00, isVeg: true, description: 'Tandoor-baked leavened bread stuffed with melted cheese and green chili.', tags: ['Freshly Baked'], badge: '' },
+            { id: 'd15', category: 'desserts', name: 'Gulab Jamun Cheesecake', price: 36.00, isVeg: true, description: 'A modern take on the classic — rosewater cheesecake with warm gulab jamun syrup.', tags: ['Fusion', 'Sweet'], badge: 'Fusion' },
+            { id: 'd16', category: 'desserts', name: 'Karak Chai', price: 14.00, isVeg: true, description: 'Strong cardamom-spiced tea, slow-brewed with milk in the Gulf tradition.', tags: ['Hot Drink'], badge: '' }
+          ]
+        },
+
+        initApp() {},
+
+        get filteredDishes() {
+          return this.menuData.dishes.filter(dish => {
+            const matchesCategory = this.activeCategory === 'all' || dish.category === this.activeCategory;
+            const matchesSearch = this.searchQuery === '' ||
+              dish.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              dish.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              dish.tags.some(t => t.toLowerCase().includes(this.searchQuery.toLowerCase()));
+            return matchesCategory && matchesSearch;
+          });
+        },
+
+        openOptionModal(dish) {
+          this.selectedDish = dish;
+          this.modalQty = 1;
+          this.selectedOptions = { portion: 'Regular Portion', spice: 'Medium', addons: [], notes: '' };
+          this.modalOpen = true;
+        },
+
+        calculateModalTotal() {
+          if (!this.selectedDish) return 0;
+          let base = this.selectedDish.price;
+
+          const portion = this.portionsList.find(p => p.name === this.selectedOptions.portion);
+          if (portion) base += portion.price;
+
+          let addonsSum = this.selectedOptions.addons.reduce((sum, addonId) => {
+            let found = this.availableAddons.find(a => a.id === addonId);
+            return sum + (found ? found.price : 0);
+          }, 0);
+          return (base + addonsSum) * this.modalQty;
+        },
+
+        confirmAddToCart() {
+          let addonsList = this.selectedOptions.addons.map(id => {
+            let found = this.availableAddons.find(a => a.id === id);
+            return found ? found.name : id;
+          });
+
+          let itemTotal = this.calculateModalTotal() / this.modalQty;
+
+          this.cart.push({
+            dish: this.selectedDish,
+            qty: this.modalQty,
+            itemTotal: itemTotal,
+            options: {
+              portion: this.selectedOptions.portion,
+              spice: this.selectedOptions.spice,
+              addonsList: addonsList,
+              notes: this.selectedOptions.notes
+            }
+          });
+
+          this.modalOpen = false;
+        },
+
+        removeFromCart(index) {
+          this.cart.splice(index, 1);
+          if (this.cart.length === 0) {
+            this.cartDrawerOpen = false;
+          }
+        },
+
+        cartTotalCount() {
+          return this.cart.reduce((sum, item) => sum + item.qty, 0);
+        },
+
+        cartTotalPrice() {
+          return this.cart.reduce((sum, item) => sum + (item.itemTotal * item.qty), 0);
+        },
+
+        sendWhatsAppOrder() {
+          if (this.cart.length === 0) return;
+
+          const subtotal = this.cartTotalPrice();
+          const vat = subtotal * 0.05;
+          const grandTotal = (subtotal + vat).toFixed(2);
+
+          // 1. Header & order context
+          let text = `🍽️ *NEW ORDER — ${this.restaurant.name.toUpperCase()}*\n`;
+          text += `-----------------------------------\n`;
+          text += `📍 *Service Type:* ${this.orderType}\n`;
+
+          if (this.orderType === 'Dine-In') {
+            text += `🪑 *Table:* ${this.tableNumber}\n`;
+          } else {
+            text += `👤 *Name:* ${this.customerName || 'Not specified'}\n`;
+            text += `📞 *Phone:* ${this.customerPhone || 'Not specified'}\n`;
+            if (this.orderType === 'Delivery') {
+              text += `🏠 *Address:* ${this.deliveryAddress || 'Not specified'}\n`;
+            }
+          }
+
+          text += `\n📋 *ORDER SUMMARY:*\n`;
+
+          // 2. Loop & format itemized breakdown
+          this.cart.forEach((item) => {
+            const itemTotal = (item.itemTotal * item.qty).toFixed(2);
+            text += `\n*${item.qty}x ${item.dish.name}* — AED ${itemTotal}\n`;
+            if (item.options.portion) {
+              text += `   └ _Portion:_ ${item.options.portion}\n`;
+            }
+            text += `   └ _Spice:_ ${item.options.spice}\n`;
+            if (item.options.addonsList.length > 0) {
+              item.options.addonsList.forEach(addon => {
+                text += `   └ _Extra:_ ${addon}\n`;
+              });
+            }
+            if (item.options.notes) {
+              text += `   └ 💬 _Note:_ "${item.options.notes}"\n`;
+            }
+          });
+
+          // 3. Financial summary
+          text += `\n-----------------------------------\n`;
+          text += `💵 *Subtotal:* AED ${subtotal.toFixed(2)}\n`;
+          text += `🏛️ *VAT (5%):* AED ${vat.toFixed(2)}\n`;
+          text += `💰 *TOTAL AMOUNT:* *AED ${grandTotal}*\n`;
+          text += `-----------------------------------\n`;
+          text += `Please confirm order status and estimated time.`;
+
+          // 4. Encode string & open link
+          const encodedText = encodeURIComponent(text);
+          window.open(`https://wa.me/${this.restaurant.whatsappNumber}?text=${encodedText}`, '_blank');
+        },
+
+        callToOrder() {
+          window.location.href = `tel:+${this.restaurant.whatsappNumber}`;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
