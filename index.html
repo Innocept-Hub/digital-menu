@@ -19,38 +19,35 @@
       theme: {
         extend: {
           colors: {
-            /* Round 4 — full palette family swap (color values only; no layout/structure change).
-               Previous olive-green family had two structural problems no amount of tuning could
-               fix: (1) the accent (saffron/gold) sits right next to green on the color wheel, so
-               it could never truly pop against an olive background — same-hue colors just don't
-               contrast well no matter the lightness gap; (2) the base page background was nearly
-               as dark as the "elevated" cards sitting on it, so nothing read as lifted.
-               This version: a true NEUTRAL near-black charcoal base (no green or any other hue
-               dominating it, so any accent color pops cleanly against it), correct light-direction
-               layering (page -> card -> modal each step up in lightness), and terracotta/red-orange
-               as the primary accent — opposite side of the wheel from the old green family, so it
-               reads as a genuine contrasting pop instead of a same-family tint. */
-            'ink': '#14120F',
-            'surface': '#211D18',
-            'surface-raised': '#332C23',
-            'surface-sunken': '#0A0908',
-            'border-soft': '#3D3428',
-            'border-strong': '#4A4030',
-            'saffron': '#E0A339',
-            'saffron-strong': '#EDB85C',
-            'saffron-deep': '#C68C2E',
-            'saffron-ink': '#1C0D06',
-            'terracotta': '#EF7A52',
-            'moss': '#7FB13E',
-            'tan': '#C9BBA8',
-            'cream': '#F5EDE1',
+            /* Round 3 — rebuilt around the two exact colors requested (ink #131C01, cream #EBC59F),
+               pushed to a richer, more saturated dark-olive family (was a washed-out gray-olive)
+               so it reads warm and premium instead of dull. Cards/modals/buttons also get a real
+               top-lit gradient + inner highlight (applied via utility classes at each usage site)
+               for the glossy/shiny look — a flat fill can't produce that, gradients can. */
+            'ink': '#131C01',
+            'surface': '#233008',
+            'surface-raised': '#3B4F12',
+            'surface-sunken': '#0A0E01',
+            'border-soft': '#485C1E',
+            'border-strong': '#5E782B',
+            'saffron': '#E8A93A',
+            'saffron-strong': '#F6C863',
+            'saffron-deep': '#D3922A',
+            'saffron-ink': '#1C1500',
+            'terracotta': '#F4703D',
+            'moss': '#8FC138',
+            'tan': '#D8BD97',
+            'cream': '#EBC59F',
             /* Dedicated near-white for primary titles ("Your Tray", dish names, section headers) —
-               kept as its own token so headings stay crisper than regular body text. */
-            'heading': '#FBF8F2',
-            /* Secondary/label text — verified at 6.07–7.39:1 against every surface in this palette,
-               comfortably clearing the 4.5:1 WCAG minimum with real margin (the old olive version's
-               equivalent token measured as low as 2.7:1, which is why it read as illegibly dull). */
-            'muted': '#AEA494',
+               'cream' alone read as flat/dull at heading weight even though it technically passed
+               AA; a true bright tone gives headings the crisp "pop" the muted tan-cream couldn't. */
+            'heading': '#FAF6EC',
+            /* 'muted' was #8F8F70 — only 2.7:1 against surface-raised, well under the 4.5:1 WCAG
+               minimum for body text, which is why labels like "SERVICE TYPE" read as illegibly
+               dull even after the palette got richer. Raised it to a real light warm-gray that
+               clears AA against every surface it sits on, while staying visually secondary to
+               'tan'/'cream' so it still reads as a lower-emphasis label, not identical to body text. */
+            'muted': '#C0BB9C',
           },
           fontFamily: {
             display: ['Fraunces', 'Georgia', 'serif'],
@@ -76,9 +73,9 @@
        how many times the token values were adjusted. Now matches 'ink' exactly, with a very subtle
        radial glow (not a flat fill) for a less inert base layer. */
     body {
-      background-color: #14120F;
-      background-image: radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(239,122,82,0.05), transparent 60%);
-      color: #F5EDE1;
+      background-color: #131C01;
+      background-image: radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(232,169,58,0.06), transparent 60%);
+      color: #EBC59F;
       font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior-y: contain;
@@ -93,7 +90,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    ::selection { background: #E0A339; color: #1C0D06; }
+    ::selection { background: #E8A93A; color: #1C1500; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -101,7 +98,7 @@
     .touch-target { min-width: 44px; min-height: 44px; }
 
     .glass-nav {
-      background: rgba(33, 29, 24, 0.90);
+      background: rgba(35, 48, 8, 0.90);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -113,17 +110,17 @@
        light catching the top edge — the two things that actually read as "glossy" to the eye. */
     .gloss-surface {
       background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 14%);
-      background-color: #211D18;
+      background-color: #233008;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 18px rgba(0,0,0,0.35);
     }
     .gloss-raised {
       background-image: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0) 18%);
-      background-color: #332C23;
+      background-color: #3B4F12;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 26px rgba(0,0,0,0.4);
     }
     .gloss-saffron {
-      background-image: linear-gradient(180deg, #EDB85C 0%, #E0A339 55%, #C68C2E 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(224,163,57,0.30);
+      background-image: linear-gradient(180deg, #F6C863 0%, #E8A93A 55%, #D3922A 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(232,169,58,0.30);
     }
 
     /* Forces real color-emoji rendering (the chili shows in its native red) no matter what text
@@ -143,7 +140,7 @@
 
     /* Image slot placeholder — reads as "photo pending", not permanent decoration */
     .photo-slot {
-      background: linear-gradient(135deg, #241F19 0%, #14110D 100%);
+      background: linear-gradient(135deg, #262E1D 0%, #171B10 100%);
       position: relative;
     }
     .photo-slot::after {
@@ -151,19 +148,19 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(90deg, rgba(201,187,168,0.05) 1px, transparent 1px),
-        linear-gradient(rgba(201,187,168,0.05) 1px, transparent 1px);
+        linear-gradient(90deg, rgba(199,180,140,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(199,180,140,0.05) 1px, transparent 1px);
       background-size: 14px 14px;
     }
     .photo-slot .photo-slot-mark {
       position: relative;
       z-index: 1;
-      color: rgba(201,187,168,0.32);
+      color: rgba(199,180,140,0.32);
     }
 
     :focus-visible {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(239,122,82,0.4);
+      box-shadow: 0 0 0 3px rgba(215,166,74,0.4);
       border-radius: 6px;
     }
 
@@ -501,8 +498,8 @@
     class="fixed bottom-0 left-0 right-0 z-40 p-4 glass-nav border-t border-border-soft">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-      <div class="flex items-center gap-3">
-        <div class="relative">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="relative shrink-0">
           <div class="w-11 h-11 rounded-lg gloss-saffron flex items-center justify-center text-saffron-ink font-bold">
             <!-- Cloche/serving-tray icon — food-relevant, replaces the old shopping-bag glyph -->
             <svg class="w-6 h-6" viewBox="0 0 292 270" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -511,17 +508,20 @@
           </div>
           <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-terracotta text-cream text-[10px] font-bold flex items-center justify-center border-2 border-ink tabular" x-text="cartTotalCount()"></span>
         </div>
-        <div>
-          <span class="text-xs text-muted block">Total Amount</span>
-          <span class="font-bold text-saffron-strong text-lg tabular">AED <span x-text="cartTotalPrice().toFixed(2)"></span></span>
+        <div class="min-w-0">
+          <span class="text-xs text-muted block whitespace-nowrap">Total Amount</span>
+          <span class="font-bold text-saffron-strong text-base tabular whitespace-nowrap">AED <span x-text="cartTotalPrice().toFixed(2)"></span></span>
         </div>
       </div>
 
+      <!-- whitespace-nowrap + shrink-0 keep "Review Tray" + arrow on one line even in the tight
+           space next to the total-amount block on narrow phones — it was wrapping to two lines
+           before because nothing stopped the button's flex row from squeezing under pressure. -->
       <button
         @click="cartDrawerOpen = true"
-        class="touch-target px-5 py-2.5 rounded-lg gloss-saffron hover:brightness-110 text-saffron-ink font-black text-[12px] uppercase tracking-wide transition-all flex items-center gap-2 active:scale-[0.98]">
+        class="touch-target shrink-0 px-3.5 py-2.5 rounded-lg gloss-saffron hover:brightness-110 text-saffron-ink font-black text-[11px] uppercase tracking-wide transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98]">
         <span>Review Tray</span>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
       </button>
 
     </div>
@@ -668,7 +668,7 @@
 
         <button
           @click="sendWhatsAppOrder()"
-          class="touch-target w-full py-2.5 px-4 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-ink font-black text-[12px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+          class="touch-target w-full py-2.5 px-4 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-ink font-black text-[13px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
           <svg class="w-5 h-5 shrink-0 fill-current" viewBox="0 0 24 24">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
           </svg>
@@ -677,7 +677,7 @@
 
         <button
           @click="callToOrder()"
-          class="touch-target w-full py-2.5 px-4 rounded-lg bg-transparent border border-border-strong hover:border-saffron hover:text-saffron-strong text-cream font-bold text-[12px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+          class="touch-target w-full py-2 px-4 rounded-lg bg-transparent border border-border-strong hover:border-saffron hover:text-saffron-strong text-cream font-bold text-[13px] uppercase tracking-wide transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.05 11.05 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
           <span>Call to Order</span>
         </button>
